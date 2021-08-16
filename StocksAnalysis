@@ -1,0 +1,142 @@
+-- 1. Total volumes for all three companies for each year from 2015 to 2020--
+
+Select 
+SUM(Volume) AS 'TotalVolume' from [Stocks] 
+where (Date) Between '2015-01-01' and '2015-12-31'
+
+
+-- 2. Get the total volumes for all companies for each year.  For year 2015
+Select
+Company, DATEPART(Year, Date) AS 'Year', SUM(Volume) AS 'TotalVolume' 
+from Stocks where Date Between '2015-01-01' and '2015-12-31' 
+Group by Company, DATEPART(Year, Date) 
+Order by 3 DESC
+
+
+-- 3. Group data by year and quarter and month
+By Year
+Select Company, DATEPART(Year, Date) AS 'Year', SUM(Volume) AS 'TotalVolume' 
+from Stocks Group by Company, DATEPART(Year, Date) 
+Order by 2,1 DESC
+
+By Quarter
+Select Company, DATEPART(Year, Date) As 'Year', DATEPART(Quarter, Date) AS 'Quarter', SUM(Volume) AS 'TotalVolume' 
+from Stocks
+Group by Company, DATEPART(Year, Date), DATEPART(Quarter, Date) 
+Order by 2,3 DESC
+
+By Month - For Ford
+Select Company, DATEPART(Year, Date) As 'Year', DATENAME(Month, Date) AS 'Month', DATEPART(Month, Date) AS 'MM', 
+SUM(Volume) AS 'TotalVolume' from Stocks
+ Where Company = 'Ford' 
+Group by Company, DATEPART(Year, Date),  DATENAME(Month, Date), DATEPART(Month, Date) 
+ORDER BY  DATEPART(Year, Date) DESC, DATEPART(Month, Date) ASC
+
+
+-- 4. Best four quarters in the five years for each company
+For Ford
+Select TOP 4 Company, DATEPART(Year, Date) As 'Year', DATENAME(Quarter, Date) AS 'Quarter', SUM(Volume) AS 'TotalVolume' 
+from Stocks
+Where Company = 'Ford' 
+Group by Company, DATEPART(Year, Date), DATENAME(Quarter, Date) 
+ORDER BY 4 DESC
+
+For Tesla 
+Select TOP 4 Company, DATEPART(Year, Date) As 'Year', DATENAME(Quarter, Date) AS 'Quarter', SUM(Volume) AS 'TotalVolume' 
+from Stocks
+Where Company = 'Tesla' 
+Group by Company, DATEPART(Year, Date), DATENAME(Quarter, Date) 
+ORDER BY 4 DESC
+
+General Motors
+Select TOP 4 Company, DATEPART(Year, Date) As 'Year', DATENAME(Quarter, Date) AS 'Quarter', SUM(Volume) AS 'TotalVolume' 
+from Stocks
+Where Company = 'Gen Motors' 
+Group by Company, DATEPART(Year, Date), DATENAME(Quarter, Date) 
+ORDER BY 4 DESC
+
+
+-- 5. Least four quarters for each year for each company
+For General Motors
+Select Company, DATEPART(Year, Date) As 'Year',	DATENAME(Quarter, Date) AS 'Quarter', SUM(Volume) AS 'TotalVolume' 
+from Stocks	
+Where Company = 'Gen Motors' 
+Group by Company, DATEPART(Year, Date), DATENAME(Quarter, Date)
+Order by 4 DESC OFFSET 20 ROWS FETCH NEXT 4 ROWS ONLY
+
+-- 6. Best Monday, Tuesday, Wednesday, Thursday and Friday in terms of Volume for each company
+For Tesla
+With Best as
+(Select Max(Volume) AS 'Max Volume', Datename(WEEKDAY, Date) AS 'DayofWeek' 
+From Stocks
+	Where Company = 'Tesla' Group by Datename(WEEKDAY, Date))
+	Select  Max(Volume) AS 'Max Volume', Datename(WEEKDAY, Date) AS 'DayofWeek', date 
+  from Stocks Join Best on Stocks.Volume = Best.[Max Volume] 
+	Group By date Order By 3 ASC
+
+-- 7. Least Monday, Tuesday, Wednesday, Thursday and Friday in terms of Volume
+For Tesla
+With Least as
+(Select Min(Volume) AS 'Min Volume', Datename(WEEKDAY, Date) AS 'DayofWeek' 
+From Stocks
+	Where Company = 'Tesla' Group by Datename(WEEKDAY, Date))
+	Select  Min(Volume) AS 'Min Volume', Datename(WEEKDAY, Date) AS 'DayofWeek', (date) 
+  from Stocks Join Least on Stocks.Volume = Least.[Min Volume] 
+	Group By Date Order by 1 ASC
+
+-- 8. Least opening price for each company
+For Ford
+With Least as
+(Select Min([Open]) AS 'LowestOpenPrice' 
+From Stocks
+Where Company = 'Ford')
+Select Company, Min([Open]) AS 'LowestOpenPrice', Date 
+from Least 
+join Stocks On Least.LowestOpenPrice = Stocks.[Open] 
+Group By Company, Date
+
+-- 9. Highest opening price for each company
+For ford
+With Highest as
+(Select Max([Open]) AS 'HighestOpenPrice' 
+From Stocks
+Where Company = 'Ford')
+Select Company, Max([Open]) AS 'HighestOpenPrice', Date 
+from Highest 
+join Stocks On Highest.HighestOpenPrice = Stocks.[Open] 
+Group By Company, Date
+
+-- 10. Least Closing Price for each company
+With Least as
+(Select Min([Close]) AS 'LowestClosePrice' 
+From Stocks
+Where Company = 'Ford')
+Select Company, Min([Close]) AS 'LowestClosePrice', Date 
+from Least 
+join Stocks On Least.LowestClosePrice = Stocks.[Close] 
+
+-- 11. Highest Closing Price for each company
+With Highest as
+(Select Max([Close]) AS 'HighestClosePrice' 
+From Stocks
+Where Company = 'Ford')
+Select Company, Max([Close]) AS 'HighestClosePrice', Date 
+from Highest 
+join Stocks On Highest.HighestClosePrice = Stocks.[Close] 
+Group By Company, Date
+
+-- 12. Where closing and opening price were the same for each company
+For Ford
+Select DatePart(Year, Date) AS 'Year', Datename(Month, Date) AS 'Month', Datename(Day, Date) As 'Day',
+[Open], [Close] from Stocks 
+WHERE Company = 'Ford'AND [Open]=[Close]
+
+-- 13. Where closing price was higher than opening price
+Select DatePart(Year, Date) AS 'Year', Datename(Month, Date) AS 'Month', Datename(Day, Date) As 'Day',
+[Open], [Close] from Stocks 
+WHERE Company = 'Ford'AND [Open]<[Close]
+
+-- 14. Where closing price was less than opening price
+Select DatePart(Year, Date) AS 'Year', Datename(Month, Date) AS 'Month', Datename(Day, Date) As 'Day',
+[Open], [Close] from Stocks 
+WHERE Company = 'Ford'AND [Open]>[Close]
