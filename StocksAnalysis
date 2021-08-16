@@ -1,9 +1,11 @@
 -- 1. Total volumes for all three companies for each year from 2015 to 2020--
-
-Select 
-SUM(Volume) AS 'TotalVolume' from [Stocks] 
-where (Date) Between '2015-01-01' and '2015-12-31'
-
+Select
+  SUM(Volume) AS 'TotalVolume'
+from
+  [Stocks]
+where
+  (Date) Between '2015-01-01'
+  and '2015-12-31'
 
 -- 2. Get the total volumes for all companies for each year.  For year 2015
 Select
